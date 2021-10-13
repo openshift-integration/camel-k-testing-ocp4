@@ -22,8 +22,9 @@ limitations under the License.
 package common
 
 import (
-	"github.com/apache/camel-k/pkg/util/defaults"
 	"testing"
+
+	"github.com/apache/camel-k/pkg/util/defaults"
 
 	. "github.com/onsi/gomega"
 
