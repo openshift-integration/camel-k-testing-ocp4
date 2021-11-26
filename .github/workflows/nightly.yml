@@ -19,6 +19,16 @@ name: nightly
 
 on:
   workflow_dispatch:
+    inputs:
+      pre-built-kamel-image:
+        description: 'Kamel image url for skipping building of kamel stages. Used for debugging'
+        required: false
+      skip-tests:
+        description: 'Skip jobs contained in this comma-separated list (values: LOCAL, BUILD, BUILDER, KUBERNETES, KNATIVE, KNATIVE_YAKS, UPGRADE). Used for debugging'
+        required: false
+      save-failed-test-ns:
+        description: 'Do NOT delete any failed test namespaces (sets the CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE env var)'
+        required: false
   schedule:
     - cron: "0 18 * * *"
   pull_request:
@@ -38,6 +48,28 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
 
+    - name: Convert input parameters to env vars
+      shell: bash
+      run: |
+        if [ -n "${{ github.event.inputs.pre-built-kamel-image }}" ]; then
+          echo "DEBUG_USE_EXISTING_IMAGE=${{ github.event.inputs.pre-built-kamel-image }}" >> $GITHUB_ENV
+        fi
+
+        if [ -n "${{ github.event.inputs.skip-tests }}" ]; then
+          toskip=($(echo ${{ github.event.inputs.skip-tests }} | tr "," "\n"))
+
+          #Print the split string
+          for skip in "${toskip[@]}"
+          do
+            echo "Skipping tests ${skip}"
+            echo "SKIP_${skip}=true" >> $GITHUB_ENV
+          done
+        fi
+
+        if [ -n "${{ github.event.inputs.save-failed-test-ns }}" ]; then
+          echo "CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE=true" >> $GITHUB_ENV
+        fi
+
     #
     # TODO
     # Fix the repository and ref prior to final PR commit
@@ -52,40 +84,40 @@ jobs:
         submodules: recursive
 
     - name: Local Tests
-      if: ${{ always() }}
+      if: ${{ env.SKIP_LOCAL != 'true' }}
       uses: ./.github/actions/e2e-local
 
     - name: Build Tests
-      if: ${{ always() }}
+      if: ${{ env.SKIP_BUILD != 'true' }}
       uses: ./.github/actions/e2e-build
 
     - name: Builder Tests (S2I)
-      if: ${{ always() }}
+      if: ${{ env.SKIP_BUILDER != 'true' }}
       uses: ./.github/actions/e2e-builder
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
         publisher: "S2I"
 
     - name: Kubernetes Tests
-      if: ${{ always() }}
+      if: ${{ env.SKIP_KUBERNETES != 'true' }}
       uses: ./.github/actions/e2e-kubernetes
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
 
     - name: KNative Tests
-      if: ${{ always() }}
+      if: ${{ env.SKIP_KNATIVE != 'true' }}
       uses: ./.github/actions/e2e-knative
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
 
     - name: KNative YAKS Tests
-      if: ${{ always() }}
+      if: ${{ env.SKIP_KNATIVE_YAKS != 'true' }}
       uses: ./.github/actions/e2e-knative-yaks
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
 
     - name: Upgrade Tests
-      if: ${{ always() }}
+      if: ${{ env.SKIP_UPGRADE != 'true' }}
       uses: ./.github/actions/e2e-upgrade
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
