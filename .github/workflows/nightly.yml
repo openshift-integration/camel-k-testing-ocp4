@@ -23,12 +23,16 @@ on:
       pre-built-kamel-image:
         description: 'Kamel image url for skipping building of kamel stages. Used for debugging'
         required: false
-      skip-tests:
-        description: 'Skip jobs contained in this comma-separated list (values: LOCAL, BUILD, BUILDER, KUBERNETES, KNATIVE, KNATIVE_YAKS, UPGRADE). Used for debugging'
+      skip-test-suites:
+        description: 'List of test suites to skip (values: LOCAL,BUILD,BUILDER,KUBERNETES,KNATIVE,KNATIVE_YAKS,UPGRADE). Used for debugging'
         required: false
       save-failed-test-ns:
-        description: 'Do NOT delete any failed test namespaces (sets the CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE env var)'
+        description: 'Do NOT delete any failed test namespaces (sets CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE)'
         required: false
+      skip-problematic:
+        description: 'Whether tests marked as problematic should be skipped - true by default (sets CAMEL_K_TEST_SKIP_PROBLEMATIC)'
+        required: false
+        default: true
   schedule:
     - cron: "0 18 * * *"
   pull_request:
@@ -55,8 +59,8 @@ jobs:
           echo "DEBUG_USE_EXISTING_IMAGE=${{ github.event.inputs.pre-built-kamel-image }}" >> $GITHUB_ENV
         fi
 
-        if [ -n "${{ github.event.inputs.skip-tests }}" ]; then
-          toskip=($(echo ${{ github.event.inputs.skip-tests }} | tr "," "\n"))
+        if [ -n "${{ github.event.inputs.skip-test-suites }}" ]; then
+          toskip=($(echo ${{ github.event.inputs.skip-test-suites }} | tr "," "\n"))
 
           #Print the split string
           for skip in "${toskip[@]}"
@@ -66,10 +70,16 @@ jobs:
           done
         fi
 
-        if [ -n "${{ github.event.inputs.save-failed-test-ns }}" ]; then
+        if [ "${{ github.event.inputs.save-failed-test-ns }}" == "true" ]; then
           echo "CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE=true" >> $GITHUB_ENV
         fi
 
+        #
+        # Avoid problematic tests in scheduled executions and if parameter set to true
+        #
+        if [ -z "${{ github.event.inputs.skip-problematic }}" ] || [ "${{ github.event.inputs.skip-problematic }}" == "true" ]; then
+          echo "CAMEL_K_TEST_SKIP_PROBLEMATIC=true" >> $GITHUB_ENV
+        fi
     #
     # TODO
     # Fix the repository and ref prior to final PR commit
