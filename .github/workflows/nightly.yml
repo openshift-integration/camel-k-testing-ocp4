@@ -33,14 +33,14 @@ on:
         description: 'Whether tests marked as problematic should be skipped - true by default (sets CAMEL_K_TEST_SKIP_PROBLEMATIC)'
         required: false
         default: true
-  schedule:
-    - cron: "0 18 * * *"
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
+#  schedule:
+#    - cron: "0 18 * * *"
+#  pull_request:
+#    branches:
+#      - main
+#  push:
+#    branches:
+#      - main
 
 concurrency:
   group: ${{ github.head_ref }}-${{ github.workflow }}
