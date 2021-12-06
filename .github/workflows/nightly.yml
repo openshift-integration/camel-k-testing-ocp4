@@ -24,7 +24,7 @@ on:
         description: 'Kamel image url for skipping building of kamel stages. Used for debugging'
         required: false
       skip-test-suites:
-        description: 'List of test suites to skip (values: LOCAL,BUILD,BUILDER,KUBERNETES,KNATIVE,KNATIVE_YAKS,UPGRADE). Used for debugging'
+        description: 'List of test suites to skip (values: BUILDER,KUBERNETES,KNATIVE,UPGRADE). Used for debugging'
         required: false
       save-failed-test-ns:
         description: 'Do NOT delete any failed test namespaces (sets CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE)'
@@ -93,19 +93,12 @@ jobs:
         persist-credentials: false
         submodules: recursive
 
-    - name: Local Tests
-      if: ${{ env.SKIP_LOCAL != 'true' }}
-      uses: ./.github/actions/e2e-local
-
-    - name: Build Tests
-      if: ${{ env.SKIP_BUILD != 'true' }}
-      uses: ./.github/actions/e2e-build
-
     - name: Builder Tests (S2I)
       if: ${{ env.SKIP_BUILDER != 'true' }}
       uses: ./.github/actions/e2e-builder
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
+        cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
         publisher: "S2I"
 
     - name: Kubernetes Tests
@@ -113,21 +106,18 @@ jobs:
       uses: ./.github/actions/e2e-kubernetes
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
+        cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
 
     - name: KNative Tests
       if: ${{ env.SKIP_KNATIVE != 'true' }}
       uses: ./.github/actions/e2e-knative
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
-
-    - name: KNative YAKS Tests
-      if: ${{ env.SKIP_KNATIVE_YAKS != 'true' }}
-      uses: ./.github/actions/e2e-knative-yaks
-      with:
-        cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
+        cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
 
     - name: Upgrade Tests
       if: ${{ env.SKIP_UPGRADE != 'true' }}
       uses: ./.github/actions/e2e-upgrade
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
+        cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
