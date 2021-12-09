@@ -33,14 +33,22 @@ on:
         description: 'Whether tests marked as problematic should be skipped - true by default (sets CAMEL_K_TEST_SKIP_PROBLEMATIC)'
         required: false
         default: true
-#  schedule:
-#    - cron: "0 18 * * *"
-#  pull_request:
-#    branches:
-#      - main
-#  push:
-#    branches:
-#      - main
+      test-filters:
+        description: |
+          List of comma-separated key/value pairs to filter the tests in each test suite:
+            TEST_INTEGRATION_COMMON_RUN,        TEST_INTEGRATION_COMMON_BUILD_RUN, TEST_INTEGRATION_COMMON_CLI_RUN
+            TEST_INTEGRATION_COMMON_CONFIG_RUN, TEST_INTEGRATION_COMMON_LANG_RUN,  TEST_INTEGRATION_COMMON_TRAITS_RUN
+            TEST_SERVICE_RUN,                   TEST_QUARKUS_RUN,                  TEST_KUSTOMIZE_RUN
+            TEST_BUILDER_RUN,                   TEST_KNATIVE_RUN,                  TEST_UPGRADE_RUN
+        required: false
+  schedule:
+    - cron: "0 18 * * *"
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.head_ref }}-${{ github.workflow }}
@@ -52,34 +60,19 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
 
+    - name: Checkout this repository
+      uses: actions/checkout@v2
+
     - name: Convert input parameters to env vars
       shell: bash
       run: |
-        if [ -n "${{ github.event.inputs.pre-built-kamel-image }}" ]; then
-          echo "DEBUG_USE_EXISTING_IMAGE=${{ github.event.inputs.pre-built-kamel-image }}" >> $GITHUB_ENV
-        fi
+        ./.github/workflows/nightly-process-inputs.sh \
+          -i "${{ github.event.inputs.pre-built-kamel-image }}" \
+          -n "${{ github.event.inputs.save-failed-test-ns }}" \
+          -s "${{ github.event.inputs.skip-test-suites }}" \
+          -p "${{ github.event.inputs.skip-problematic }}" \
+          -t "${{ github.event.inputs.test-filters }}"
 
-        if [ -n "${{ github.event.inputs.skip-test-suites }}" ]; then
-          toskip=($(echo ${{ github.event.inputs.skip-test-suites }} | tr "," "\n"))
-
-          #Print the split string
-          for skip in "${toskip[@]}"
-          do
-            echo "Skipping tests ${skip}"
-            echo "SKIP_${skip}=true" >> $GITHUB_ENV
-          done
-        fi
-
-        if [ "${{ github.event.inputs.save-failed-test-ns }}" == "true" ]; then
-          echo "CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE=true" >> $GITHUB_ENV
-        fi
-
-        #
-        # Avoid problematic tests in scheduled executions and if parameter set to true
-        #
-        if [ -z "${{ github.event.inputs.skip-problematic }}" ] || [ "${{ github.event.inputs.skip-problematic }}" == "true" ]; then
-          echo "CAMEL_K_TEST_SKIP_PROBLEMATIC=true" >> $GITHUB_ENV
-        fi
     #
     # TODO
     # Fix the repository and ref prior to final PR commit
