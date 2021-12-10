@@ -73,15 +73,11 @@ jobs:
           -p "${{ github.event.inputs.skip-problematic }}" \
           -t "${{ github.event.inputs.test-filters }}"
 
-    #
-    # TODO
-    # Fix the repository and ref prior to final PR commit
-    #
     - name: Checkout Camel-k
       uses: actions/checkout@v2
       with:
-        repository: 'phantomjinx/camel-k'
-        ref: 'er'
+        repository: '${{ secrets.E2E_UPSTREAM_REPOSITORY }}'
+        ref: '${{ secrets.E2E_UPSTREAM_BRANCH }}'
         path: '.'
         persist-credentials: false
         submodules: recursive
