@@ -29,6 +29,7 @@ on:
       save-failed-test-ns:
         description: 'Do NOT delete any failed test namespaces (sets CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE)'
         required: false
+        default: true
       skip-problematic:
         description: 'Whether tests marked as problematic should be skipped - true by default (sets CAMEL_K_TEST_SKIP_PROBLEMATIC)'
         required: false
@@ -83,7 +84,7 @@ jobs:
         submodules: recursive
 
     - name: Builder Tests (S2I)
-      if: ${{ env.SKIP_BUILDER != 'true' }}
+      if: ${{ always() && env.SKIP_BUILDER != 'true' }}
       uses: ./.github/actions/e2e-builder
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
@@ -91,21 +92,21 @@ jobs:
         publisher: "S2I"
 
     - name: Kubernetes Tests
-      if: ${{ env.SKIP_KUBERNETES != 'true' }}
+      if: ${{ always() && env.SKIP_KUBERNETES != 'true' }}
       uses: ./.github/actions/e2e-kubernetes
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
         cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
 
     - name: KNative Tests
-      if: ${{ env.SKIP_KNATIVE != 'true' }}
+      if: ${{ always() && env.SKIP_KNATIVE != 'true' }}
       uses: ./.github/actions/e2e-knative
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
         cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
 
     - name: Upgrade Tests
-      if: ${{ env.SKIP_UPGRADE != 'true' }}
+      if: ${{ always() && env.SKIP_UPGRADE != 'true' }}
       uses: ./.github/actions/e2e-upgrade
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}

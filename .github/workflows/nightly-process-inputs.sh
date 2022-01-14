@@ -60,7 +60,10 @@ if [ -n "${PRE_BUILT_IMAGE}" ]; then
   echo "DEBUG_USE_EXISTING_IMAGE=${PRE_BUILT_IMAGE}" >> $GITHUB_ENV
 fi
 
-if [ "${SAVE_FAILED_NAMESPACES}" == "true" ]; then
+#
+# Save failed namespaces by default for the moment
+#
+if [ -z "${SAVE_FAILED_NAMESPACES}" ] || [ "${SAVE_FAILED_NAMESPACES}" == "true" ]; then
   echo "CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE=true" >> $GITHUB_ENV
 fi
 
