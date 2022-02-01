@@ -83,6 +83,13 @@ jobs:
         persist-credentials: false
         submodules: recursive
 
+    - name: Upgrade Tests
+      if: ${{ always() && env.SKIP_UPGRADE != 'true' }}
+      uses: ./.github/actions/e2e-upgrade
+      with:
+        cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
+        cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
+
     - name: Builder Tests (S2I)
       if: ${{ always() && env.SKIP_BUILDER != 'true' }}
       uses: ./.github/actions/e2e-builder
@@ -101,13 +108,6 @@ jobs:
     - name: KNative Tests
       if: ${{ always() && env.SKIP_KNATIVE != 'true' }}
       uses: ./.github/actions/e2e-knative
-      with:
-        cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
-        cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
-
-    - name: Upgrade Tests
-      if: ${{ always() && env.SKIP_UPGRADE != 'true' }}
-      uses: ./.github/actions/e2e-upgrade
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
         cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
