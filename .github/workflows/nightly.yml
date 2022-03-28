@@ -98,16 +98,16 @@ jobs:
         cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
         publisher: "S2I"
 
-    - name: Kubernetes Tests
-      if: ${{ always() && env.SKIP_KUBERNETES != 'true' }}
-      uses: ./.github/actions/e2e-kubernetes
+    - name: KNative Tests
+      if: ${{ always() && env.SKIP_KNATIVE != 'true' }}
+      uses: ./.github/actions/e2e-knative
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
         cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
 
-    - name: KNative Tests
-      if: ${{ always() && env.SKIP_KNATIVE != 'true' }}
-      uses: ./.github/actions/e2e-knative
+    - name: Kubernetes Tests
+      if: ${{ always() && env.SKIP_KUBERNETES != 'true' }}
+      uses: ./.github/actions/e2e-kubernetes
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
         cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
