@@ -29,7 +29,7 @@ on:
       save-failed-test-ns:
         description: 'Do NOT delete any failed test namespaces (sets CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE)'
         required: false
-        default: true
+        default: false
       skip-problematic:
         description: 'Whether tests marked as problematic should be skipped - true by default (sets CAMEL_K_TEST_SKIP_PROBLEMATIC)'
         required: false
