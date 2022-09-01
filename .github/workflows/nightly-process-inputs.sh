@@ -27,13 +27,16 @@ if [ -z "$GITHUB_ENV" ]; then
   rm -f "${GITHUB_ENV}"
 fi
 
-while getopts ":i:n:s:p:t:" opt; do
+while getopts ":i:n:s:p:q:t:" opt; do
   case "${opt}" in
     i)
       PRE_BUILT_IMAGE=${OPTARG}
       ;;
     n)
       SAVE_FAILED_NAMESPACES=${OPTARG}
+      ;;
+    q)
+      LOG_LEVEL=${OPTARG}
       ;;
     s)
       SKIP_TEST_SUITES=${OPTARG}
@@ -55,6 +58,10 @@ while getopts ":i:n:s:p:t:" opt; do
   esac
 done
 shift $((OPTIND-1))
+
+if [ -n "${LOG_LEVEL}" ]; then
+  echo "CAMEL_K_LOG_LEVEL=${LOG_LEVEL}" >> $GITHUB_ENV
+fi
 
 if [ -n "${PRE_BUILT_IMAGE}" ]; then
   echo "DEBUG_USE_EXISTING_IMAGE=${PRE_BUILT_IMAGE}" >> $GITHUB_ENV
