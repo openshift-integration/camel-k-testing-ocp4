@@ -59,9 +59,11 @@ while getopts ":i:n:s:p:q:t:" opt; do
 done
 shift $((OPTIND-1))
 
-if [ -n "${LOG_LEVEL}" ]; then
-  echo "CAMEL_K_LOG_LEVEL=${LOG_LEVEL}" >> $GITHUB_ENV
+if [ -z "${LOG_LEVEL}" ]; then
+  LOG_LEVEL="debug"
 fi
+
+echo "CAMEL_K_LOG_LEVEL=${LOG_LEVEL}" >> $GITHUB_ENV
 
 if [ -n "${PRE_BUILT_IMAGE}" ]; then
   echo "DEBUG_USE_EXISTING_IMAGE=${PRE_BUILT_IMAGE}" >> $GITHUB_ENV

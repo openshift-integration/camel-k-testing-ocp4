@@ -23,6 +23,7 @@ on:
       log-level:
         description: 'Set the operator log level (info or debug)'
         required: false
+        default: debug
       pre-built-kamel-image:
         description: 'Kamel image url for skipping building of kamel stages. Used for debugging'
         required: false
