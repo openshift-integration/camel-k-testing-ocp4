@@ -19,6 +19,8 @@
 
 set -e
 
+DEFAULT_LOG_LEVEL="info"
+
 #
 # Used to unit testing this script
 #
@@ -60,7 +62,7 @@ done
 shift $((OPTIND-1))
 
 if [ -z "${LOG_LEVEL}" ]; then
-  LOG_LEVEL="debug"
+  LOG_LEVEL=${DEFAULT_LOG_LEVEL}
 fi
 
 echo "CAMEL_K_LOG_LEVEL=${LOG_LEVEL}" >> $GITHUB_ENV
