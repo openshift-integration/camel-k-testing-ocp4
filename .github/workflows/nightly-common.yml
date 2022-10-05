@@ -15,7 +15,7 @@
 # limitations under the License.
 # ---------------------------------------------------------------------------
 
-name: E2E Integration Tests
+name: Common E2E Integration Tests
 
 on:
   workflow_dispatch:
@@ -26,9 +26,6 @@ on:
         default: info
       pre-built-kamel-image:
         description: 'Kamel image url for skipping building of kamel stages. Used for debugging'
-        required: false
-      skip-test-suites:
-        description: 'List of test suites to skip (values: BUILDER,INSTALL,KNATIVE,UPGRADE). Used for debugging'
         required: false
       save-failed-test-ns:
         description: 'Do NOT delete any failed test namespaces (sets CAMEL_K_TEST_SAVE_FAILED_TEST_NAMESPACE)'
@@ -41,13 +38,12 @@ on:
       test-filters:
         description: |
           List of comma-separated key/value pairs to filter the tests in each test suite:
-            TEST_KNATIVE_RUN                  TEST_BUILDER_RUN,                   TEST_SERVICE_RUN,
-            TEST_LOCAL_RUN,                   TEST_REGISTRY_MAVEN_WAGON_RUN,      TEST_INSTALL_RUN,
-            TEST_INSTALL_CLI_RUN,             TEST_INSTALL_KUSTOMIZE_RUN,         TEST_QUARKUS_RUN,
-            TEST_UPGRADE_RUN
+            TEST_INTEGRATION_COMMON_RUN,      TEST_INTEGRATION_COMMON_BUILD_RUN,
+            TEST_INTEGRATION_COMMON_CONFIG_RUN, TEST_INTEGRATION_COMMON_LANG_RUN,
+            TEST_INTEGRATION_COMMON_TRAITS_RUN
         required: false
   schedule:
-    - cron: "0 01 * * *"
+    - cron: "0 18 * * *"
   pull_request:
     branches:
       - main
@@ -88,31 +84,9 @@ jobs:
         persist-credentials: false
         submodules: recursive
 
-    - name: Upgrade Tests
-      if: ${{ always() && env.SKIP_UPGRADE != 'true' }}
-      uses: ./.github/actions/e2e-upgrade
-      with:
-        cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
-        cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
-
-    - name: Builder Tests (S2I)
-      if: ${{ always() && env.SKIP_BUILDER != 'true' }}
-      uses: ./.github/actions/e2e-builder
-      with:
-        cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
-        cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
-        publisher: "S2I"
-
-    - name: KNative Tests
-      if: ${{ always() && env.SKIP_KNATIVE != 'true' }}
-      uses: ./.github/actions/e2e-knative
-      with:
-        cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
-        cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
-
-    - name: Install Tests
-      if: ${{ always() && env.SKIP_INSTALL != 'true' }}
-      uses: ./.github/actions/e2e-install
+    - name: Common Tests
+      if: ${{ always() && env.SKIP_COMMON != 'true' }}
+      uses: ./.github/actions/e2e-common
       with:
         cluster-config-data: ${{ secrets.E2E_CLUSTER_CONFIG }}
         cluster-kube-config-data: ${{ secrets.E2E_KUBE_CONFIG }}
